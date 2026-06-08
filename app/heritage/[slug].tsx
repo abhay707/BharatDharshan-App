@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps';
+import SafeMapView from '../../components/shared/MapView';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -349,27 +349,11 @@ export default function MonumentDetailScreen() {
         {typeof data.latitude === 'number' && typeof data.longitude === 'number' ? (
           <View style={s.section}>
             <Text style={s.sectionTitle}>Location</Text>
-            <View style={s.mapWrap}>
-              <MapView
-                style={s.map}
-                initialRegion={{
-                  latitude: data.latitude,
-                  longitude: data.longitude,
-                  latitudeDelta: 0.008,
-                  longitudeDelta: 0.008,
-                }}
-                scrollEnabled={false}
-                zoomEnabled={false}
-                pitchEnabled={false}
-                rotateEnabled={false}
-              >
-                <Marker
-                  coordinate={{ latitude: data.latitude, longitude: data.longitude }}
-                  title={data.name}
-                  pinColor={colors.saffron}
-                />
-              </MapView>
-            </View>
+            <SafeMapView
+              latitude={data.latitude}
+              longitude={data.longitude}
+              name={data.name}
+            />
             <TouchableOpacity
               style={s.openMapsBtn}
               onPress={() => openInMaps(data.latitude!, data.longitude!, data.name)}

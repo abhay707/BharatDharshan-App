@@ -18,7 +18,11 @@ export function useStates(params?: StatesParams) {
 export function useStateDetail(slug: string) {
   return useQuery({
     queryKey: ['state', slug],
-    queryFn: () => api.get(endpoints.state(slug)) as Promise<any>,
+    queryFn: async () => {
+      const res = await (api.get(endpoints.state(slug)) as Promise<any>);
+      // Laravel resource wraps single objects in {data: {...}}; unwrap it
+      return res?.data ?? res;
+    },
     enabled: !!slug,
   });
 }

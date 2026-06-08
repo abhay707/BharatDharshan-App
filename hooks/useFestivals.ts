@@ -19,7 +19,10 @@ export function useFestivals(params?: FestivalsParams) {
 export function useFestivalDetail(slug: string) {
   return useQuery({
     queryKey: ['festival', slug],
-    queryFn: () => api.get(endpoints.festival(slug)) as Promise<any>,
+    queryFn: async () => {
+      const res = await (api.get(endpoints.festival(slug)) as Promise<any>);
+      return res?.data ?? res;
+    },
     enabled: !!slug,
   });
 }

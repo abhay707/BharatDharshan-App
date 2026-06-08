@@ -1,42 +1,61 @@
-import { useEffect } from 'react';
-import { DimensionValue, StyleProp, ViewStyle } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import { useEffect, useRef } from 'react';
+import { Animated, DimensionValue, StyleProp, ViewStyle } from 'react-native';
 
-interface Props {
+interface SkeletonBoxProps {
+  // Old prop names kept for backward compat with existing callers
   w?: DimensionValue;
   h?: number;
   radius?: number;
+  // New prop names (also accepted)
+  width?: DimensionValue;
+  height?: DimensionValue;
   style?: StyleProp<ViewStyle>;
 }
 
-export function SkeletonBox({ w = '100%', h = 16, radius = 8, style }: Props) {
-  const opacity = useSharedValue(0.3);
+export function SkeletonBox({
+  w,
+  h = 20,
+  radius = 4,
+  width,
+  height,
+  style,
+}: SkeletonBoxProps) {
+  const finalWidth = width ?? w ?? '100%';
+  const finalHeight = height ?? h;
+
+  const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    opacity.value = withRepeat(
-      withSequence(
-        withTiming(0.72, { duration: 700 }),
-        withTiming(0.3, { duration: 700 }),
-      ),
-      -1,
-    );
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.7,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
   }, []);
-
-  const anim = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return (
     <Animated.View
       style={[
-        { width: w, height: h, borderRadius: radius, backgroundColor: '#D4C9B6' },
-        anim,
+        {
+          width: finalWidth,
+          height: finalHeight,
+          backgroundColor: 'rgba(201,144,26,0.2)',
+          borderRadius: radius,
+          opacity,
+        },
         style,
       ]}
     />
   );
 }
+
+export default SkeletonBox;

@@ -1,8 +1,5 @@
-import '../global.css';
-
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { QueryClientProvider } from '@tanstack/react-query';
 import {
   CormorantGaramond_400Regular,
   CormorantGaramond_400Regular_Italic,
@@ -20,12 +17,10 @@ import {
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 import { queryClient } from '../lib/queryClient';
-import { colors } from '../constants/colors';
 
-// Keep the splash screen visible until fonts are loaded.
-// Must be called before any component renders.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -48,7 +43,6 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  // Return null to keep splash screen visible while fonts load.
   if (!fontsLoaded && !fontError) return null;
 
   return (
@@ -56,16 +50,11 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.cream },
-          headerTintColor: colors.ink,
-          headerTitleStyle: {
-            fontFamily: 'DMSans_500Medium',
-            fontWeight: '500',
-          },
-          contentStyle: { backgroundColor: colors.cream },
+          headerShown: false,
+          contentStyle: { backgroundColor: '#0D0500' },
         }}
       >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="states/[slug]"
           options={{ headerShown: true, title: '', headerBackTitle: 'States' }}
@@ -82,6 +71,7 @@ export default function RootLayout() {
           name="cuisine/[dish-slug]"
           options={{ headerShown: true, title: '', headerBackTitle: 'Cuisine' }}
         />
+        <Stack.Screen name="search" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
     </QueryClientProvider>

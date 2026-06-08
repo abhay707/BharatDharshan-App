@@ -19,7 +19,10 @@ export function useMonuments(params?: MonumentsParams) {
 export function useMonumentDetail(slug: string) {
   return useQuery({
     queryKey: ['monument', slug],
-    queryFn: () => api.get(endpoints.monument(slug)) as Promise<any>,
+    queryFn: async () => {
+      const res = await (api.get(endpoints.monument(slug)) as Promise<any>);
+      return res?.data ?? res;
+    },
     enabled: !!slug,
   });
 }

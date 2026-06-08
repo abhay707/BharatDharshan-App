@@ -12,14 +12,6 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import ReanimatedLib, {
-  useSharedValue,
-  useAnimatedStyle as useReanimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  withDelay,
-} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -106,61 +98,43 @@ interface MonthSection {
 }
 
 // ─── Gold particle ────────────────────────────────────────────────────────────
-function GoldParticle({
-  x,
-  y,
-  s,
-  d,
-}: {
-  x: string;
-  y: string;
-  s: number;
-  d: number;
-}) {
-  const float = useSharedValue(0);
-  const fade = useSharedValue(0.3);
+function GoldParticle({ x, y, s, d }: { x: string; y: string; s: number; d: number }) {
+  const translateY = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    float.value = withDelay(
-      d,
-      withRepeat(
-        withSequence(
-          withTiming(-9, { duration: 2200 }),
-          withTiming(0, { duration: 2200 }),
-        ),
-        -1,
-        false,
-      ),
-    );
-    fade.value = withDelay(
-      d,
-      withRepeat(
-        withSequence(
-          withTiming(0.85, { duration: 2200 }),
-          withTiming(0.25, { duration: 2200 }),
-        ),
-        -1,
-        false,
-      ),
-    );
+    const timer = setTimeout(() => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(translateY, { toValue: -9, duration: 2200, useNativeDriver: true }),
+            Animated.timing(opacity, { toValue: 0.85, duration: 2200, useNativeDriver: true }),
+          ]),
+          Animated.parallel([
+            Animated.timing(translateY, { toValue: 0, duration: 2200, useNativeDriver: true }),
+            Animated.timing(opacity, { toValue: 0.25, duration: 2200, useNativeDriver: true }),
+          ]),
+        ]),
+      ).start();
+    }, d);
+    return () => clearTimeout(timer);
   }, []);
 
-  const anim = useReanimatedStyle(() => ({
-    transform: [{ translateY: float.value }],
-    opacity: fade.value,
-  }));
-
-  const baseStyle = {
-    position: 'absolute' as const,
-    left: x,
-    top: y,
-    width: s,
-    height: s,
-    borderRadius: s / 2,
-    backgroundColor: '#C9901A',
-  };
-
-  return <ReanimatedLib.View style={[baseStyle as any, anim]} />;
+  return (
+    <Animated.View
+      style={{
+        position: 'absolute',
+        left: x as any,
+        top: y as any,
+        width: s,
+        height: s,
+        borderRadius: s / 2,
+        backgroundColor: '#C9901A',
+        transform: [{ translateY }],
+        opacity,
+      }}
+    />
+  );
 }
 
 // ─── Ticker strip ─────────────────────────────────────────────────────────────

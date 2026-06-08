@@ -1,12 +1,8 @@
-import { useEffect } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
-} from 'react-native-reanimated';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fontFamily, fontSize } from '../../constants/fonts';
@@ -23,20 +19,24 @@ interface AnimatedEntryProps {
 }
 
 function AnimatedEntry({ delay, children, style }: AnimatedEntryProps) {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(22);
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(22)).current;
 
   useEffect(() => {
-    opacity.value = withDelay(delay, withTiming(1, { duration: 650 }));
-    translateY.value = withDelay(delay, withTiming(0, { duration: 650 }));
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 650, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 650, useNativeDriver: true }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
   }, []);
 
-  const animStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  return <Animated.View style={[animStyle, style]}>{children}</Animated.View>;
+  return (
+    <Animated.View style={[{ opacity, transform: [{ translateY }] }, style]}>
+      {children}
+    </Animated.View>
+  );
 }
 
 // ─── Stat pill ────────────────────────────────────────────────────────────────
@@ -64,6 +64,16 @@ export function HeroSection({ stats }: HeroSectionProps) {
       end={{ x: 0.9, y: 1 }}
       style={[styles.gradient, { height: HERO_HEIGHT }]}
     >
+      {/* Search icon — top-right corner */}
+      <TouchableOpacity
+        style={[styles.searchBtn, { top: insets.top + 12 }]}
+        onPress={() => router.push('/search' as any)}
+        activeOpacity={0.75}
+        hitSlop={8}
+      >
+        <Ionicons name="search" size={22} color="rgba(245,237,216,0.85)" />
+      </TouchableOpacity>
+
       {/* Content anchored to the bottom of the hero */}
       <View style={[styles.content, { paddingTop: insets.top + 16 }]}>
         {/* ① Heritage pill */}
@@ -122,6 +132,12 @@ export function HeroSection({ stats }: HeroSectionProps) {
 const styles = StyleSheet.create({
   gradient: {
     justifyContent: 'flex-end',
+  },
+  searchBtn: {
+    position: 'absolute',
+    right: 20,
+    zIndex: 10,
+    padding: 6,
   },
   content: {
     paddingHorizontal: 28,
